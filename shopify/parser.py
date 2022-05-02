@@ -11,21 +11,27 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 from fake_useragent.fake import UserAgent
+# TODO: Add logging
 
 
 class ShopifyParser:
-    def __init__(self):
+    def __init__(self, proxy=''):
         os.environ["WDM_LOG_LEVEL"] = "0"
 
         options = Options()
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        # TODO: Implement Headless mode
         # options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
 
+        # Maximized window (headless mode fix)
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--start-maximized")
+
         self.ua = {'user-agent': UserAgent().chrome}
         options.add_argument(f"user-agent={self.ua}")
+        if proxy:
+            options.add_argument(f'--proxy-server={proxy}')
 
         options.add_argument("--profile-directory=Default")
         options.add_argument("--user-data-dir=/var/tmp/chrome_user_data")
@@ -65,19 +71,10 @@ class ShopifyParser:
             result = 'N/A'
         return result
 
-    def check_suggestion(self, num, query):
+    def check_suggestion(self, num):
         """
-        Type in a query and click on certain suggestion
+        Click on certain suggestion and scrape data
         """
-        input_element = self.driver.find_element(
-            By.XPATH,
-            self.search_input_xpath
-        )
-        input_element.click()
-        # timeout to render suggestion overflow
-        sleep(1)
-        input_element.send_keys(query)
-        sleep(1)
         self.driver.find_elements(
             By.XPATH,
             self.search_suggestions_xpath
@@ -92,6 +89,10 @@ class ShopifyParser:
                 self.driver.find_element(By.XPATH, self.search_results_xpath).text
             )
 
+        # Close current tab and switch to the first opened tab
+        self.driver.close()
+        self.driver.switch_to.window(self.driver.window_handles[0])
+
         return {
             'page_type': page_type,
             'results_count': results_count
@@ -101,11 +102,10 @@ class ShopifyParser:
         # First iteration to get all suggestions
         start_url = 'https://apps.shopify.com/'
         self.driver.get(start_url)
-        self.driver.maximize_window()
 
         input_element = self.driver.find_element(
             By.XPATH,
-            '//form[@id="UiSearchInputForm"]/*/*/input[@type="search"]'
+            self.search_input_xpath
         )
         input_element.click()
         # timeout to render suggestion overflow
@@ -116,27 +116,54 @@ class ShopifyParser:
         # Scrape all the suggestions without clicking
         suggestions_elements = self.driver.find_elements(
             By.XPATH,
-            '//li[@class="ui-search-suggestions__suggestions-item "]'
+            self.search_suggestions_xpath
         )
         suggestions_text = [elem.text for elem in suggestions_elements]
 
+        final_data = []
         if len(suggestions_text) > 1:
             for num in range(len(suggestions_text)):
                 self.driver.switch_to.new_window('tab')
                 self.driver.get(start_url)
-                result = self.check_suggestion(num, query)
-                print(num + 1, query, suggestions_text[num],
-                      result['page_type'], result['results_count'])
-                # TODO: Store results data except of print calling
-                # TODO: Close tabs after finish scraping
+                # Find input
+                input_element = self.driver.find_element(
+                    By.XPATH,
+                    self.search_input_xpath
+                )
+                input_element.click()
+                # timeout to render suggestion overflow
+                sleep(1)
+                input_element.send_keys(query)
+                sleep(1)
+
+                result = self.check_suggestion(num)
+
+                final_data += {
+                    'position': num + 1,
+                    'query': query,
+                    'suggestion': suggestions_text[num],
+                    'page_type': result['page_type'],
+                    'results_count': result['results_count']
+                }
         else:
-            suggestions_elements[0].click()
-            print(1, query, suggestions_text[0], self.classify_page(self.driver.current_url))
+            # TODO: FIX ISSUE WITH ONE SUGGESTION (WRONG SESSION ID???)
+            # selenium.common.exceptions.InvalidSessionIdException: Message: invalid session id
+            result = self.check_suggestion(0)
+            final_data += {
+                'position': 1,
+                'query': query,
+                'suggestion': suggestions_text[0],
+                'page_type': result['page_type'],
+                'results_count': result['results_count']
+            }
 
         self.driver.close()
         self.driver.quit()
 
+        return final_data
+
 
 if __name__ == "__main__":
+    keyword = input('Please type the search query: ').strip()
     parser = ShopifyParser()
-    parser.worker('app')
+    print(parser.worker(keyword))
