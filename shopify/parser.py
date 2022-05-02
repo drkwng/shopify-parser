@@ -19,6 +19,7 @@ class ShopifyParser:
 
         options = Options()
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        # TODO: Implement Headless mode
         # options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
@@ -33,7 +34,7 @@ class ShopifyParser:
             options=options
         )
 
-        # XPATH
+        # XPATH Expressions
         self.search_input_xpath = '//form[@id="UiSearchInputForm"]/*/*/input[@type="search"]'
         self.search_suggestions_xpath = '//li[@class="ui-search-suggestions__suggestions-item "]'
         self.search_results_xpath = '//div[@class="grid__item grid__item--tablet-up-half grid__item--wide-up-third"]'
