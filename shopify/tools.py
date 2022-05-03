@@ -26,3 +26,4 @@ if __name__ == "__main__":
     for i in get_search_query():
         print(i)
 
+    # print([i for i in get_search_query()])

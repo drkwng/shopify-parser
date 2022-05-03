@@ -1,3 +1,5 @@
+from multiprocessing.pool import ThreadPool
+
 from shopify.tools import csv_writer, get_search_query
 from shopify.parser import ShopifyParser
 
