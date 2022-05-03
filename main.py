@@ -1,5 +1,3 @@
-from multiprocessing.pool import ThreadPool, Pool
-
 from shopify.tools import csv_writer, get_search_query
 from shopify.parser import ShopifyParser
 
@@ -9,13 +7,13 @@ def main():
     heading = ['QUERY', 'POSITION', 'SUGGESTION', 'PAGE_TYPE', 'RESULTS_COUNT']
     csv_writer(res_file, 'w', heading)
 
-    parser = ShopifyParser()
+    print('Program has started. Stay calm and wait for the end...')
     for i in get_search_query():
-        print('Program has started. Stay calm and wait for the end...')
+        parser = ShopifyParser()
         try:
             result = parser.worker(i)
             csv_writer(res_file, 'a', result)
-            print(f'{i} Done!')
+            print(f'Query "{i}" scraping done!')
 
         except Exception as err:
             print(err, type(err))
