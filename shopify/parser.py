@@ -18,7 +18,7 @@ class Driver:
     def start_driver(self):
         options = Options()
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        options.add_argument('--headless')
+        # options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
 
@@ -37,7 +37,7 @@ class Driver:
             ChromeDriverManager().install(),
             options=options
         )
-
+        driver.switch_to.new_window('tab')
         return driver
 
 
@@ -47,7 +47,6 @@ class ShopifyParser(Driver):
         os.environ["WDM_LOG_LEVEL"] = "0"
 
         self.driver = self.start_driver()
-        self.driver.switch_to.new_window('tab')
 
         # XPATH Expressions
         self.search_input_xpath = '//form[@id="UiSearchInputForm"]/*/*/input[@type="search"]'
