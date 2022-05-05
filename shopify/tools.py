@@ -1,5 +1,15 @@
-import itertools
 import csv
+import itertools
+
+
+def get_proxies(filename):
+    """
+    USER:PASSWORD@IP:PORT
+    1 proxy per line
+    """
+    with open(filename, 'r', encoding='utf-8') as file:
+        proxies = [line.strip() for line in file]
+    return proxies
 
 
 def get_search_query():
@@ -26,4 +36,3 @@ if __name__ == "__main__":
     for i in get_search_query():
         print(i)
 
-    # print([i for i in get_search_query()])
