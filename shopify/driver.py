@@ -54,7 +54,7 @@ class Driver:
     def create_driver(cls, _proxy=''):
         the_driver = getattr(threadLocal, 'the_driver', None)
         if the_driver is None:
-            the_driver = cls()
+            the_driver = cls(_proxy)
             threadLocal.the_driver = the_driver
         driver = the_driver.driver
         the_driver = None
