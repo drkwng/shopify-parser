@@ -46,7 +46,7 @@ def csv_writer(res_file, mode, data):
             for el in data:
                 writer.writerow([
                     el['query'], el['letters_cnt'], el['position'], el['suggestion'],
-                    el['page_type'], el['results_count']
+                    el['page_type']
                 ])
 
 

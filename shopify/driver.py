@@ -45,7 +45,7 @@ class Driver:
                 options=options
             )
 
-        self.driver.switch_to.new_window('tab')
+        # self.driver.switch_to.new_window('tab')
 
     def __del__(self):
         self.driver.quit()

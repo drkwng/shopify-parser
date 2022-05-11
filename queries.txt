@@ -1,2 +1,5 @@
-apple pay
-payment
+apl
+ap
+conv
+app
+pay
