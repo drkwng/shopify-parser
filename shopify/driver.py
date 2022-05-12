@@ -1,7 +1,6 @@
 import os
 import threading
 
-from fake_useragent.fake import UserAgent
 from selenium.webdriver.chrome.options import Options
 from seleniumwire import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -25,7 +24,9 @@ class Driver:
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--start-maximized")
 
-        ua = {'user-agent': UserAgent().chrome}
+        ua = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36"
+        }
         options.add_argument(f"user-agent={ua}")
 
         if _proxy:

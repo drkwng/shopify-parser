@@ -1,7 +1,4 @@
-import gc
-import threading
-from multiprocessing.pool import ThreadPool
-
+from shopify.driver import Driver
 from shopify.parser import worker
 from shopify.tools import *
 
@@ -20,8 +17,6 @@ def choose_mode():
 
 
 def main():
-    thread_local = threading.local()
-
     results_file = 'results/results.csv'
     heading = ['QUERY', 'LETTERS_COUNT', 'POSITION', 'SUGGESTION', 'PAGE_TYPE']
     csv_writer(results_file, 'w', heading)
@@ -34,17 +29,16 @@ def main():
         queries = get_queries('queries.txt')
         print(f'You chose "Scrape by list of suggestions" ({len(queries)} queries)\n')
 
-    number_of_processes = min(8, len(queries))
-    with ThreadPool(processes=number_of_processes) as pool:
-        pool.map(worker, queries)
-        # Must ensure drivers are quited before threads are destroyed:
-        del thread_local
-        # This should ensure that the __del__ method is run on class Driver:
-        gc.collect()
-        pool.close()
-        pool.join()
+    driver = Driver.create_driver()
+    start_url = 'https://apps.shopify.com/'
+    driver.get(start_url)
+
+    for query in queries:
+        worker(driver, query)
 
     print(f'Done! Check the "{results_file}" in the program folder.')
+    driver.close()
+    driver.quit()
 
 
 if __name__ == "__main__":

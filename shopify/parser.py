@@ -12,6 +12,7 @@ from .tools import csv_writer
 # XPATH Expressions
 search_input_xpath = '//form[@id="UiSearchInputForm"]/*/*/input[@type="search"]'
 search_suggestions_xpath = '//li[@class="ui-search-suggestions__suggestions-item "]'
+clear_input_btn_xpath = '//button[@class="ui-search-suggestions__button ui-search-input-navbar__button"]'
 
 
 def get_suggestion_type(element):
@@ -25,18 +26,14 @@ def get_suggestion_type(element):
         return 'category'
 
 
-def worker(query):
+def worker(driver, query):
     """
     First open page https://apps.shopify.com/ (start_url) to scrape all the suggestions by query.
     After that open start_url as many times as there are suggestions amount.
     Click on each suggestion, load and classify page, scrape search results amount.
     """
     if len(query) > 0:
-        print(f'Start sraping query: {query}\n')
-        driver = Driver.create_driver()
-        driver.switch_to.new_window('tab')
-        start_url = 'https://apps.shopify.com/'
-        driver.get(start_url)
+        print(f'Start sraping query: {query}')
 
         input_element = driver.find_element(
             By.XPATH,
@@ -44,7 +41,7 @@ def worker(query):
         )
         input_element.click()
         # timeout to render suggestion overflow
-        sleep(1)
+        sleep(0.5)
         input_element.send_keys(query)
         sleep(1)
 
@@ -66,6 +63,10 @@ def worker(query):
             }
             final_data += [result]
 
-        driver.close()
-        driver.switch_to.window(driver.window_handles[0])
+        clear_button = driver.find_element(
+            By.XPATH,
+            clear_input_btn_xpath
+        )
+        clear_button.click()
+
         csv_writer('results/results.csv', 'a', final_data)
